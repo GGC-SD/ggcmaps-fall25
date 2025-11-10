@@ -3,6 +3,7 @@
 import { Inter } from 'next/font/google';
 import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS for styling
 import '../app/global.css';
+import './styles/header.css';
 import Header from '../components/Header';
 import MapHeader from '../components/MapHeader';
 import HeaderSizer from '../components/HeaderSizer';

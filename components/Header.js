@@ -12,11 +12,12 @@ export default function Header() {
           <Image
             src="/images/ggc-logo.png"
             alt="GGC Logo"
-            width={40}
-            height={40}
+            // Use the original image intrinsic dimensions so Next.js knows the aspect ratio
+            width={200}
+            height={113}
+            className="header-logo-img"
             priority
           />
-          <span className="header-title">GGC Maps</span>
         </div>
         <div className="header-search">
           <Find />

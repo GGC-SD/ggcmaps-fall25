@@ -1,0 +1,37 @@
+/* app/styles/footer.css */
+/* Footer and small map header styles moved from global.css */
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, var(--ggc-green-primary) 0%, var(--ggc-green-dark) 100%);
+  color: var(--bm-header-text-color);
+  padding: calc(var(--bm-footer-padding-y) * 0.5) 0;
+  font-size: var(--bm-footer-font-size);
+  text-align: center;
+  z-index: 2000;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 -4px 12px rgba(0, 112, 74, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer .map-title {
+  color: var(--bm-header-text-color);
+  margin: 0;
+  font-size: var(--bm-header-title-font-size);
+  font-weight: bold;
+}
+
+.footer .floor-label {
+  font-size: 0.85em;
+  opacity: 0.9;
+}
+
+.footer .text-muted {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.footer p {
+  margin: 0;
+}
