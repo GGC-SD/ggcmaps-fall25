@@ -54,7 +54,14 @@ const ALIASES = {
   bball: {building: "F", level: "L1", room: "basketballcourt"},
   mech: {building: "F", level: "L1", room: "mechanical"},
   track: {building: "F", level: "L2", room: "elevatedtrack"},
-  
+  aerobics: {building: "F", level: "L2", room: "aerobics"},
+  freeweights: {building: "F", level: "L2", room: "freeweights"},
+  cardio: {building: "F", level: "L2", room: "cardio"},
+  weightmachines: {building: "F", level: "L2", room: "weightmachines"},
+  weight: {building: "F", level: "L2", room: "weightmachines"},
+  weightroom: {building: "F", level: "L2", room: "weightmachines"},
+  gym: {building: "F", level: "L2", room: "freeweights"},
+  spin: {building: "F", level: "L2", room: "spinroom"},
   
 };
 
