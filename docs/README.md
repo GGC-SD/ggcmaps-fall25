@@ -94,4 +94,10 @@ Required technologies and tools to run this application:
 | ![Karen](/public/images/karen.jpg)      | **Karen Armendariz**  | Testing Lead (60%) · Client Liaison (20%) · Programmer (20%)      | 100% |
 | ![Justin](/public/images/justin.jpg)    | **Justin McCabe**     | UI/UX Designer (60%) · Project Manager (20%) · Programmer (20%)   | 100% |
 
-### Project Flyer and video (at the end of the semester)
+### Project Flyer 
+
+[View the Project Flyer](/docs/CREATE_FLYER.pdf)
+
+### YouTube Video Project Demo
+
+[![Watch the Project Demo](https://img.youtube.com/vi/qlB9uArTr3g/0.jpg)](https://www.youtube.com/watch?v=qlB9uArTr3g)
