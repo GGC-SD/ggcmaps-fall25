@@ -6,3 +6,7 @@ add the campus gps
 add the new buidlings/rooms/parking lots to the data files
 remove the old buidlings/rooms/parking lots from the data files
 contact the campus police to address whether or not to map out the living dorms 
+add some sort of list thing that shows all the room nicknames
+Addition/Removal of new/old buildings, parking lots, rooms etc. through updates of the SVG's and JSON's. 
+More room nicknames could always be added. 
+Addition of more language modes. 
