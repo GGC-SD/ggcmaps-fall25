@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import rooms from "../data/rooms.json";
 import buildings from "../data/buildings.json";
 import { useRouter } from "next/navigation";
@@ -86,6 +86,13 @@ export default function Find() {
   const router = useRouter();
   const { locale } = useLanguage();
   const ui = getUIText(locale);
+
+  // Keep validation feedback temporary so it does not remain over the map.
+  useEffect(() => {
+    if (!error) return undefined;
+    const timeoutId = window.setTimeout(() => setError(""), 4000);
+    return () => window.clearTimeout(timeoutId);
+  }, [error]);
 
   const onFindClickButton = () => {
     const userInput = findValue.trim().toLowerCase();
@@ -176,7 +183,10 @@ export default function Find() {
             maxLength={maxCharsAllowed}
             style={{ width: "var(--justin-globe-inputBarSize)" }}
             value={findValue}
-            onChange={(e) => setFindValue(e.target.value)}
+            onChange={(e) => {
+              setFindValue(e.target.value);
+              if (error) setError("");
+            }}
             onKeyDown={onKeyDown}
             aria-label="Search for buildings or rooms"
           />

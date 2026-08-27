@@ -471,8 +471,7 @@ const ZoomPan = forwardRef(function ZoomPan({
       </div>
       {showControls && (
         <div
-          className="position-absolute top-0 p-2"
-          style={{ pointerEvents: 'none', zIndex: 5, right: '0.75rem' }}
+          className="zoompan-controls-container"
         >
           <div className="zoompan-controls" style={{ pointerEvents: 'auto' }}>
             <button
