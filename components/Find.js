@@ -4,7 +4,14 @@ import { useEffect, useState } from "react";
 import rooms from "../data/rooms.json";
 import buildings from "../data/buildings.json";
 import { useRouter } from "next/navigation";
-import { searchForRoom, validateSearchInput, parseFloorInput, formatNotFoundError, extractRoomNavInfo } from "../lib/searchUtils";
+import {
+  searchForRoom,
+  validateSearchInput,
+  parseFloorInput,
+  formatNotFoundError,
+  extractRoomNavInfo,
+  resolveRoomLevelId,
+} from "../lib/searchUtils";
 import { useLanguage } from "./LanguageContext";
 import { getUIText } from "../lib/i18n";
 
@@ -155,7 +162,14 @@ export default function Find() {
 
     // Navigate to the room and highlight it
     const { building, floor, roomNumber } = navInfo;
-    router.push(`/building/${building}/L${floor}?room=${encodeURIComponent(roomNumber)}`);
+    const level = resolveRoomLevelId({ building, floor, roomNumber });
+
+    if (!level) {
+      setError("Invalid room floor in database.");
+      return;
+    }
+
+    router.push(`/building/${building}/${level}?room=${encodeURIComponent(roomNumber)}`);
   };
 
   const onHelpClick = () => {

@@ -45,10 +45,23 @@ test('floor search "b2" routes to /building/B/L2', async () => {
   expect(mockPush).toHaveBeenCalledWith('/building/B/L2');
 });
 
-test('alias "aec" routes to W/L1 with room=1160', async () => {
+test('alias "aec" routes to W/GL with room=1160', async () => {
   render(<Find />);
   await typeAndFind('aec');
-  expect(mockPush).toHaveBeenCalledWith('/building/W/L1?room=1160');
+  expect(mockPush).toHaveBeenCalledWith('/building/W/GL?room=1160');
+});
+
+test('W room searches route to the floor file that contains the room', async () => {
+  render(<Find />);
+
+  await typeAndFind('w1160');
+  expect(mockPush).toHaveBeenLastCalledWith('/building/W/GL?room=1160');
+
+  await typeAndFind('w2110');
+  expect(mockPush).toHaveBeenLastCalledWith('/building/W/L1?room=2110');
+
+  await typeAndFind('w3110');
+  expect(mockPush).toHaveBeenLastCalledWith('/building/W/L2?room=3110');
 });
 
 test('invalid search shows "<term> is not valid"', async () => {
