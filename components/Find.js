@@ -1,10 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import rooms from "../data/rooms.json";
 import buildings from "../data/buildings.json";
 import { useRouter } from "next/navigation";
-import { searchForRoom, validateSearchInput, parseFloorInput, formatNotFoundError, extractRoomNavInfo } from "../lib/searchUtils";
+import {
+  searchForRoom,
+  validateSearchInput,
+  parseFloorInput,
+  formatNotFoundError,
+  extractRoomNavInfo,
+  resolveRoomLevelId,
+} from "../lib/searchUtils";
 import { useLanguage } from "./LanguageContext";
 import { getUIText } from "../lib/i18n";
 
@@ -87,6 +94,13 @@ export default function Find() {
   const { locale } = useLanguage();
   const ui = getUIText(locale);
 
+  // Keep validation feedback temporary so it does not remain over the map.
+  useEffect(() => {
+    if (!error) return undefined;
+    const timeoutId = window.setTimeout(() => setError(""), 4000);
+    return () => window.clearTimeout(timeoutId);
+  }, [error]);
+
   const onFindClickButton = () => {
     const userInput = findValue.trim().toLowerCase();
 
@@ -148,7 +162,14 @@ export default function Find() {
 
     // Navigate to the room and highlight it
     const { building, floor, roomNumber } = navInfo;
-    router.push(`/building/${building}/L${floor}?room=${encodeURIComponent(roomNumber)}`);
+    const level = resolveRoomLevelId({ building, floor, roomNumber });
+
+    if (!level) {
+      setError("Invalid room floor in database.");
+      return;
+    }
+
+    router.push(`/building/${building}/${level}?room=${encodeURIComponent(roomNumber)}`);
   };
 
   const onHelpClick = () => {
@@ -176,7 +197,10 @@ export default function Find() {
             maxLength={maxCharsAllowed}
             style={{ width: "var(--justin-globe-inputBarSize)" }}
             value={findValue}
-            onChange={(e) => setFindValue(e.target.value)}
+            onChange={(e) => {
+              setFindValue(e.target.value);
+              if (error) setError("");
+            }}
             onKeyDown={onKeyDown}
             aria-label="Search for buildings or rooms"
           />
