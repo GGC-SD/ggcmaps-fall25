@@ -4,9 +4,9 @@
 /* 🌍 Global Variables */
 :root {
   /* Layout dimensions */
-  --header-height: 4rem;
-  --footer-height: 3rem; /* Fixed footer height */
-  --max-width: 1400px;
+  --header-height: 0px;
+  --footer-height: 0px; /* Footer removed */
+
   
   /* Spacing and typography */
   --base-font-size: clamp(14px, 2.5vw, 18px);
@@ -64,8 +64,8 @@
   --shadow-xl: 0 24px 48px rgba(0, 112, 74, 0.20);
 
   /* Layout estimates for full-height maps (tweak as needed) */
-  --header-estimate: 96px;           /* approx header height */
-  --footer-estimate: 88px;           /* approx footer height */
+  --header-estimate: 0px;            /* header removed */
+  --footer-estimate: 0px;            /* footer removed */
   --map-vertical-margins: 24px;      /* breathing room */
 }
 
@@ -206,6 +206,14 @@ main {
     margin: 0;
   }
 }
+  .standalone-search {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1100;
+    width: min(32rem, calc(100vw - 2rem));
+  }
 
 @media (max-width: 480px) {
   .header-search {
@@ -365,7 +373,6 @@ main {
   align-items: center;
   justify-content: center;
   transform-origin: 0 0;
-  will-change: transform;
 }
 
 /* Zoom controls positioned in top-right */
@@ -435,6 +442,8 @@ svg[data-map-anchor] {
   object-fit: contain;
   display: block;
   flex: 1;
+  shape-rendering: geometricPrecision;
+  text-rendering: geometricPrecision;
 }
 
 .page-container-inner {
@@ -1355,7 +1364,7 @@ svg .micro-font,
 .floor-content svg .micro-font,
 .map-wrap svg .micro-font {
   font-size: 0.3rem !important; /* Reduced from original 0.3rem */
-  letter-spacing: -0.01em; /* Tighten letter spacing slightly */
+  letter-spacing: 0;
   font-weight: 600; /* Make it slightly bolder for better readability at small size */
   text-align: right;
 }
@@ -1781,21 +1790,15 @@ svg .label,
   pointer-events: none;
 }
 
-/* Top center header in HUD */
+/* Bottom-center map title in HUD */
 .overlay-hud-header-top {
   position: absolute;
-  top: var(--spacing-unit);
+  top: auto;
+  bottom: var(--spacing-unit);
   left: 50%;
   transform: translateX(-50%);
   z-index: 999;
   pointer-events: auto;
-}
-
-@media (max-width: 640px) {
-  .overlay-hud-header-top {
-    top: auto;
-    bottom: var(--spacing-unit);
-  }
 }
 
 .overlay-map-header {
@@ -1830,13 +1833,15 @@ svg .label,
 /* Responsive adjustments for small screens */
 @media (max-width: 768px) {
   :root {
-    --header-height: auto;
+    --header-height: 0px;
+    --footer-height: 0px;
   }
 }
 
 @media (max-width: 640px) {
   :root {
-    --footer-height: 6rem;
+    --header-height: 0px;
+    --footer-height: 0px;
     --spacing-unit: 0.5rem;
   }
 
@@ -1917,12 +1922,12 @@ svg .label,
   }
   
   .overlay-hud-topleft.has-back-button {
-    top: calc(0.35rem + 34px + 6px);
+    top: calc(4.75rem + 44px + 8px);
   }
   
   .overlay-hud-topleft-back {
     left: 0.35rem;
-    top: 0.35rem;
+    top: 4.75rem;
     gap: 6px;
     width: 2.5rem;
   }
@@ -2150,6 +2155,7 @@ svg .label,
   flex-direction: column;
   gap: 10px;
   pointer-events: auto;
+  z-index: 1900;
 }
 
 .overlay-language-toggle {
@@ -2221,8 +2227,22 @@ svg .label,
 
 .zoompan-controls {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
+}
+
+/* Stack zoom controls immediately above the legend/links buttons. */
+.zoompan-controls-container {
+  position: absolute;
+  right: 30px;
+  bottom: calc(var(--spacing-unit) + 150px);
+  z-index: 1700;
+  pointer-events: none;
+}
+
+.zoompan-controls-container .zoompan-controls {
+  pointer-events: auto;
 }
 
 /* Zoom +/- buttons */
@@ -2232,13 +2252,13 @@ svg .label,
   background: var(--ggc-green-primary);
   color: #ffffff;
   font-weight: 700;
-  width: 2rem;
-  height: 2rem;
+  width: 1.75rem;
+  height: 1.75rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-sm);
-  font-size: 1rem;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.25s ease;
   padding: 0;
@@ -2268,14 +2288,14 @@ svg .label,
   color: #ffffff;
   font-weight: 600;
   padding: 0.3rem 0.5rem;
-  min-width: 5.2rem;
-  height: 1.9rem;
+  min-width: 4.5rem;
+  height: 1.75rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   box-shadow: var(--shadow-sm);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   cursor: pointer;
   transition: all 0.25s ease;
 }
@@ -2325,20 +2345,26 @@ svg .label,
   .overlay-hud-buttons {
     gap: 8px;
   }
-  
+
+  /* Keep zoom controls aligned just above the smaller mobile HUD buttons. */
+  .zoompan-controls-container {
+    right: 10px;
+    bottom: calc(var(--spacing-unit) + 104px);
+  }
+
   /* Scale down zoom buttons (+/-) */
   .zoom-btn {
-    width: 2rem;
-    height: 2rem;
-    font-size: 1rem;
+    width: 1.65rem;
+    height: 1.65rem;
+    font-size: 0.85rem;
   }
   
   /* Scale down zoom reset button */
   .zoom-reset-btn {
-    font-size: 0.8rem;
-    padding: 0.3rem 0.5rem;
-    min-width: 5.2rem;
-    height: 1.9rem;
+    font-size: 0.72rem;
+    padding: 0.25rem 0.4rem;
+    min-width: 4.2rem;
+    height: 1.65rem;
   }
   
   .zoompan-controls {
@@ -2357,20 +2383,25 @@ svg .label,
     gap: 6px;
   }
 
+  .zoompan-controls-container {
+    right: 7px;
+    bottom: calc(var(--spacing-unit) + 124px);
+  }
+
   /* Scale down zoom buttons on mobile */
   .zoom-btn {
-    width: 1.7rem;
-    height: 1.7rem;
-    font-size: 0.85rem;
+    width: 1.55rem;
+    height: 1.55rem;
+    font-size: 0.8rem;
     box-shadow: 0 2px 4px rgba(0, 112, 74, 0.1);
   }
 
   /* Scale down zoom reset button on mobile */
   .zoom-reset-btn {
-    font-size: 0.7rem;
-    padding: 0.25rem 0.4rem;
-    min-width: 3.8rem;
-    height: 1.75rem;
+    font-size: 0.66rem;
+    padding: 0.2rem 0.35rem;
+    min-width: 3.6rem;
+    height: 1.55rem;
   }
 
   .zoompan-controls {
@@ -2404,7 +2435,7 @@ svg .label,
   }
 
   .overlay-hud-topleft.has-back-button {
-    top: calc(clamp(0.25rem, 1.5vw, 0.5rem) + 40px + 8px); /* for smaller screens */
+    top: calc(4.75rem + 44px + 8px);
   }
 }
 
@@ -2424,7 +2455,7 @@ svg .label,
 @media (max-width: 480px) {
   .overlay-hud-topleft-back {
     left: clamp(0.25rem, 1.5vw, 0.5rem);
-    top: clamp(0.25rem, 1.5vw, 0.5rem);
+    top: 4.75rem;
     gap: 8px;
   }
 }
@@ -2510,6 +2541,39 @@ svg .label,
   .hud-btn:active .hud-btn-label {
     opacity: 1;
   }
+
+  /* Keep the campus menu below search and show the hamburger by default. */
+  .overlay-hud-topleft:not(.has-back-button) {
+    top: 4.75rem;
+  }
+
+  .overlay-hud-topleft-back {
+    top: 4.75rem;
+  }
+
+  .overlay-hud-topleft.has-back-button {
+    top: calc(4.75rem + 44px + 8px);
+  }
+
+  .overlay-hud-topleft .hud-btn i {
+    display: flex;
+    opacity: 1;
+  }
+
+  .overlay-hud-topleft .hud-btn-label {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .overlay-hud-topleft .hud-btn:hover i,
+  .overlay-hud-topleft .hud-btn:focus-visible i {
+    opacity: 0;
+  }
+
+  .overlay-hud-topleft .hud-btn:hover .hud-btn-label,
+  .overlay-hud-topleft .hud-btn:focus-visible .hud-btn-label {
+    opacity: 1;
+  }
 }
 
 @media (max-width: 768px) {
@@ -2550,8 +2614,9 @@ svg .label,
 
 /* Slide-in panels */
 .overlay-panel {
+  --overlay-panel-top-offset: calc(var(--spacing-unit) + 3rem + var(--spacing-unit));
   position: absolute;
-  top: calc(var(--spacing-unit) + 3rem + var(--spacing-unit));
+  top: var(--overlay-panel-top-offset);
   bottom: 12px;
   width: clamp(260px, 28vw, 420px);
   max-width: 92vw;
@@ -2579,19 +2644,44 @@ svg .label,
   transform: translateX(120%);
 }
 
+.overlay-panel.overlay-right {
+  --overlay-panel-top-offset: var(--spacing-unit);
+  bottom: auto;
+  height: auto;
+  max-height: calc(100vh - var(--overlay-panel-top-offset) - var(--spacing-unit) - 7.5rem);
+}
+
+.overlay-panel.overlay-right .overlay-panel-inner {
+  height: auto;
+  max-height: inherit;
+}
+
+.overlay-panel.overlay-right .overlay-panel-body {
+  max-height: calc(100vh - var(--overlay-panel-top-offset) - var(--spacing-unit) - 10.75rem);
+}
+
 @media (max-width: 640px) {
   .overlay-panel {
-    top: calc(var(--spacing-unit) + 2.75rem + var(--spacing-unit));
+    --overlay-panel-top-offset: calc(var(--spacing-unit) + 2.75rem + var(--spacing-unit));
     bottom: 8px;
     width: min(70vw, 100%);
     max-width: none;
     border-radius: 10px;
   }
+
+  .overlay-panel.overlay-right {
+    --overlay-panel-top-offset: clamp(5.5rem, 14vh, 6.5rem);
+    max-height: calc(100vh - var(--overlay-panel-top-offset) - 2rem);
+  }
+
+  .overlay-panel.overlay-right .overlay-panel-body {
+    max-height: calc(100vh - var(--overlay-panel-top-offset) - 5rem);
+  }
 }
 
 @media (max-width: 480px) {
   .overlay-panel {
-    top: calc(var(--spacing-unit) + 2.5rem + var(--spacing-unit));
+    --overlay-panel-top-offset: calc(var(--spacing-unit) + 2.5rem + var(--spacing-unit));
     bottom: 8px;
     width: min(65vw, 280px);
     max-width: 65vw;
@@ -2609,6 +2699,15 @@ svg .label,
     left: auto;
     right: 4px;
     width: auto;
+  }
+
+  .overlay-panel.overlay-right {
+    --overlay-panel-top-offset: clamp(5.25rem, 14vh, 6.25rem);
+    max-height: calc(100vh - var(--overlay-panel-top-offset) - 2rem);
+  }
+
+  .overlay-panel.overlay-right .overlay-panel-body {
+    max-height: calc(100vh - var(--overlay-panel-top-offset) - 5rem);
   }
 
   /* Mobile adjustments for Legend and Links panels */
@@ -2638,7 +2737,7 @@ svg .label,
   .legend-panel {
     padding: 0.4rem;
     gap: 0.25rem;
-    max-height: 100%;
+    max-height: none;
   }
 
   .legend-header {

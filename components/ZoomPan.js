@@ -38,6 +38,11 @@ const ZoomPan = forwardRef(function ZoomPan({
   // Clamp value between min and max
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
+  const getCenteredPos = (rect, bounds, nextScale) => ({
+    x: rect.width / (2 * nextScale) - (bounds.x + bounds.width / 2),
+    y: rect.height / (2 * nextScale) - (bounds.y + bounds.height / 2)
+  });
+
   const getAnchorBounds = useCallback(() => {
     const vp = viewportRef.current;
     if (!vp) return null;
@@ -93,9 +98,7 @@ const ZoomPan = forwardRef(function ZoomPan({
 
       const bounds = getAnchorBounds();
       if (bounds && isAutoFit && !userHasDragged.current) {
-        const desiredX = rect.width / 2 - next * (bounds.x + bounds.width / 2);
-        const desiredY = rect.height / 2 - next * (bounds.y + bounds.height / 2);
-        setPos({ x: desiredX, y: desiredY });
+        setPos(getCenteredPos(rect, bounds, next));
         setScale(next);
         return;
       }
@@ -165,13 +168,7 @@ const ZoomPan = forwardRef(function ZoomPan({
 
       const scaled = proposedScale * fitScaleMultiplier;
       const nextScale = clamp(scaled, minScale, maxScale);
-      const centerX = bounds.x + bounds.width / 2;
-      const centerY = bounds.y + bounds.height / 2;
-
-      const nextPos = {
-        x: rect.width / 2 - nextScale * centerX,
-        y: rect.height / 2 - nextScale * centerY
-      };
+      const nextPos = getCenteredPos(rect, bounds, nextScale);
 
       setScale(nextScale);
       setPos(nextPos);
@@ -203,10 +200,7 @@ const ZoomPan = forwardRef(function ZoomPan({
       const rect = vp.getBoundingClientRect();
       const bounds = getAnchorBounds();
       if (bounds) {
-        nextPos = {
-          x: rect.width / 2 - nextScale * (bounds.x + bounds.width / 2),
-          y: rect.height / 2 - nextScale * (bounds.y + bounds.height / 2)
-        };
+        nextPos = getCenteredPos(rect, bounds, nextScale);
       }
     }
 
@@ -462,17 +456,15 @@ const ZoomPan = forwardRef(function ZoomPan({
         style={{
           width: '100%',
           height: '100%',
-          transform: `translate(${pos.x}px, ${pos.y}px) scale(${scale})`,
-          transformOrigin: '0 0',
-          willChange: 'transform'
+          transform: `scale(${scale}) translate(${pos.x}px, ${pos.y}px)`,
+          transformOrigin: '0 0'
         }}
       >
         {children}
       </div>
       {showControls && (
         <div
-          className="position-absolute top-0 p-2"
-          style={{ pointerEvents: 'none', zIndex: 5, right: '0.75rem' }}
+          className="zoompan-controls-container"
         >
           <div className="zoompan-controls" style={{ pointerEvents: 'auto' }}>
             <button

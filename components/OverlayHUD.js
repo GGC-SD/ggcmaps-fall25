@@ -124,7 +124,7 @@ export default function OverlayHUD({
 
   return (
     <div className="overlay-hud" aria-label={overlayCopy.mapControls}>
-      {/* Map header (top center) */}
+      {/* Map title (bottom center) */}
       {showMapInfo && (
         <div className="overlay-hud-header-top">
           <div className="overlay-map-header">
