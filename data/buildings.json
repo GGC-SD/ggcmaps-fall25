@@ -1,5 +1,12 @@
 [
   {
+    "id": "CC",
+    "name": "Convocation Center",
+    "floors": [
+      { "id": "L1", "label": "Level 1", "file": "/BuildingMaps/CC/L1.svg" }
+    ]
+  },
+  {
     "id": "A",
     "name": "Building A",
     "floors": [

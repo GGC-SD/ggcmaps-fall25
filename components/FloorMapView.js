@@ -3,9 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import ZoomPan from './ZoomPan';
 import OverlayHUD from './OverlayHUD';
-import { sanitizeSvgMarkup, escapeSelectorId } from '../lib/svgUtils';
+import { sanitizeSvgMarkup } from '../lib/svgUtils';
 import { getAssetPath } from '../lib/assetUtils';
-import { getNextFloor, getPreviousFloor } from '../lib/floorNavigation';
 import { useElementSelection } from '../hooks/useElementSelection';
 import { useLanguage } from './LanguageContext';
 import { getUIText } from '../lib/i18n';
@@ -21,24 +20,9 @@ export default function FloorMapView({
 }) {
   const [svgContent, setSvgContent] = useState('');
   const containerRef = useRef(null);
-  const [selectedId, setSelectedId] = useElementSelection(containerRef.current, svgContent);
+  const [, setSelectedId] = useElementSelection(containerRef.current, svgContent);
   const { locale } = useLanguage();
   const ui = getUIText(locale);
-
-  // Find current floor index and data
-  const floors = buildingData?.floors || [];
-  const currentFloorIndex = floors.findIndex(floor => floor.id === currentFloorId);
-
-  // Floor navigation handlers
-  const goToUpperFloor = () => {
-    const next = getNextFloor(floors, currentFloorId);
-    if (next) onFloorChange(next.id);
-  };
-
-  const goToLowerFloor = () => {
-    const prev = getPreviousFloor(floors, currentFloorId);
-    if (prev) onFloorChange(prev.id);
-  };
 
   // Handles the selection of a room or area on the map
   const handleSelect = (id) => {

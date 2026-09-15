@@ -87,6 +87,9 @@ export default function CampusMapView({
     const svgRoot = wrapper?.querySelector('svg');
     if (!svgRoot) return;
 
+    // CC now has a floor map, so enable the standard building hover and cursor.
+    svgRoot.querySelector('g.building-group[id="cc"]')?.classList.remove('no-hover');
+
     svgRoot.setAttribute('preserveAspectRatio', 'xMidYMid meet');
     svgRoot.setAttribute('data-map-anchor', '');
 

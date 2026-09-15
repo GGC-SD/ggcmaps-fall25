@@ -1377,6 +1377,8 @@ svg .label,
   text-anchor: start !important; /* Override SVG's middle anchor */
 }
 
+#cc-floor-l1 .label { text-anchor: middle !important; }
+
 /* Building D specific label size fix */
 .map-wrap[data-building="D"] svg .label {
   font-size: 14px !important;
