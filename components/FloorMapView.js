@@ -93,9 +93,7 @@ export default function FloorMapView({
 
     // Delegate click to capture element IDs
     const onClick = (e) => {
-      const clickable =
-        e.target.closest(interactiveSelector) ||
-        e.target.closest('[id]');
+      const clickable = e.target.closest(interactiveSelector);
       if (!clickable) return;
       e.preventDefault();
       const group = clickable.closest('.room-group');

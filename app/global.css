@@ -1377,6 +1377,11 @@ svg .label,
   text-anchor: start !important; /* Override SVG's middle anchor */
 }
 
+/* Preserve the centered labels in both Convocation Center floor maps. */
+.map-wrap[data-building="CC"] svg .label {
+  text-anchor: middle !important;
+}
+
 /* Building D specific label size fix */
 .map-wrap[data-building="D"] svg .label {
   font-size: 14px !important;

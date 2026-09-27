@@ -88,6 +88,7 @@ export default function CampusMapView({
     if (!svgRoot) return;
 
     svgRoot.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    svgRoot.querySelector('g.building-group[id="cc"]')?.classList.remove('no-hover');
     svgRoot.setAttribute('data-map-anchor', '');
 
     svgRoot.querySelectorAll('[data-map-anchor]').forEach((el) => {

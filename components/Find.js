@@ -59,6 +59,13 @@ const ALIASES = {
   pool: {building: "F", level: "L1", room: "jrolympicpool"},
   basketball: {building: "F", level: "L1", room: "basketballcourt"},
   bball: {building: "F", level: "L1", room: "basketballcourt"},
+  "cc basketball": {building: "CC", level: "L1", room: "Basketball_Court"},
+  "cc basketball court": {building: "CC", level: "L1", room: "Basketball_Court"},
+  "cc bball": {building: "CC", level: "L1", room: "Basketball_Court"},
+  ccbasketball: {building: "CC", level: "L1", room: "Basketball_Court"},
+  ccbball: {building: "CC", level: "L1", room: "Basketball_Court"},
+  "cc-basketballcourt": {building: "CC", level: "L1", room: "Basketball_Court"},
+  "cc event space": {building: "CC", level: "L2", room: "Event_Space"},
   mech: {building: "F", level: "L1", room: "mechanical"},
   track: {building: "F", level: "L2", room: "elevatedtrack"},
   aerobics: {building: "F", level: "L2", room: "aerobics"},
@@ -123,8 +130,8 @@ export default function Find() {
       return;
     }
 
-    // 2. Check for single building letter (e.g., "b")
-    if (validBuildings.includes(userInput) && userInput.length === 1) {
+    // 2. Check for a building code (e.g., "b" or "cc")
+    if (validBuildings.includes(userInput)) {
       const building = userInput.toUpperCase();
       const level = building === "W" ? "GL" : "L1";
       router.push(`/building/${building}/${level}`);
@@ -132,7 +139,7 @@ export default function Find() {
     }
 
     // 3. Check for building + floor (e.g., "b2")
-    if (validBuildingFloors.includes(userInput) && userInput.length === 2) {
+    if (validBuildingFloors.includes(userInput)) {
       const floorData = parseFloorInput(userInput);
       if (floorData) {
         router.push(`/building/${floorData.building}/L${floorData.floor}`);
