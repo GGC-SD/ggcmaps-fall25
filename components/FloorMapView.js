@@ -1,12 +1,11 @@
 // components/FloorMapView.js
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import ZoomPan from './ZoomPan';
 import OverlayHUD from './OverlayHUD';
-import { sanitizeSvgMarkup, escapeSelectorId } from '../lib/svgUtils';
+import { sanitizeSvgMarkup } from '../lib/svgUtils';
 import { getAssetPath } from '../lib/assetUtils';
 import { getNextFloor, getPreviousFloor } from '../lib/floorNavigation';
-import { useElementSelection } from '../hooks/useElementSelection';
 import { useLanguage } from './LanguageContext';
 import { getUIText } from '../lib/i18n';
 
@@ -17,11 +16,14 @@ export default function FloorMapView({
   buildingData,
   currentFloorId,
   onFloorChange,
-  onRoomSelect
+  onRoomSelect,
+  roomToHighlight
 }) {
   const [svgContent, setSvgContent] = useState('');
+  // Keep React from replacing the highlighted SVG during URL-only renders.
+  const svgMarkup = useMemo(() => ({ __html: svgContent }), [svgContent]);
   const containerRef = useRef(null);
-  const [selectedId, setSelectedId] = useElementSelection(containerRef.current, svgContent);
+  const [selectedId, setSelectedId] = useState(roomToHighlight);
   const { locale } = useLanguage();
   const ui = getUIText(locale);
 
@@ -41,14 +43,46 @@ export default function FloorMapView({
   };
 
   // Handles the selection of a room or area on the map
-  const handleSelect = (id) => {
+  const handleSelect = useCallback((id) => {
     if (id) {
       setSelectedId(String(id).trim()); // Update the selected ID state
       if (onRoomSelect) {
         onRoomSelect(String(id).trim()); // Notify parent of room selection
       }
     }
-  };
+  }, [onRoomSelect]);
+
+  // URL changes (including Back/Forward) and floor changes reset the selection.
+  useEffect(() => {
+    setSelectedId(roomToHighlight);
+  }, [roomToHighlight, src]);
+
+  // Apply both clicked and linked selections once the SVG is available.
+  useEffect(() => {
+    const svg = containerRef.current?.querySelector('svg');
+    if (!svg) return;
+    svg.querySelectorAll('.active-room, .label--active, [aria-selected]').forEach(el => {
+      el.classList.remove('active-room', 'label--active');
+      el.removeAttribute('aria-selected');
+    });
+    if (!selectedId) return;
+
+    // Compare IDs directly so URL values are never interpreted as CSS selectors.
+    const target = Array.from(svg.querySelectorAll('[id]')).find(el => el.id === selectedId);
+    if (!target) return;
+    target.classList.add('active-room');
+    target.setAttribute('aria-selected', 'true');
+    const shape = target.querySelector('.room') || target.querySelector('rect, polygon, path');
+    const label = target.querySelector('.label') || target.querySelector('text');
+    if (shape) {
+      shape.classList.add('active-room');
+      shape.parentElement.appendChild(shape);
+    }
+    if (label) {
+      label.classList.add('label--active');
+      label.parentElement.appendChild(label);
+    }
+  }, [selectedId, svgContent]);
 
   // Load SVG as text so events bubble to ZoomPan
   useEffect(() => {
@@ -105,7 +139,7 @@ export default function FloorMapView({
 
     container.addEventListener('click', onClick);
     return () => container.removeEventListener('click', onClick);
-  }, [svgContent, interactiveSelector]);
+  }, [svgContent, interactiveSelector, handleSelect]);
 
   return (
     <div className="map-wrap" data-building={buildingData?.id}>
@@ -125,7 +159,7 @@ export default function FloorMapView({
         <div
           className="w-100 h-100"
           style={{ pointerEvents: 'auto' }}
-          dangerouslySetInnerHTML={{ __html: svgContent }}
+          dangerouslySetInnerHTML={svgMarkup}
         />
       </ZoomPan>
 
