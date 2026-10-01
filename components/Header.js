@@ -1,6 +1,6 @@
 // components/Header.js
 "use client";
-
+import { getAssetPath } from '../lib/assetUtils';
 import Image from 'next/image';
 import Find from "../components/Find";
 
@@ -10,7 +10,7 @@ export default function Header() {
       <nav className="header-nav">
         <div className="header-logo-link">
           <Image
-            src="/images/ggc-logo.png"
+            src={getAssetPath('/images/ggc-logo.png')}
             alt="GGC Logo"
             width={200}
             height={113}

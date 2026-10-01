@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "extract-rooms": "node scripts/extract-room-data.js",
-    "test": "jest --watchAll",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watchAll",
     "test:ci": "jest --runInBand",
     "predev": "npm run extract-rooms"
   },

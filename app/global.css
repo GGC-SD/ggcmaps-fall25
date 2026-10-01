@@ -1990,6 +1990,86 @@ svg .label,
 }
 
 /* Find component responsive styles */
+.find-search-row {
+  position: relative;
+}
+
+.find-input-wrap {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.find-input-wrap > input { padding-right: 2.75rem !important; }
+.find-clear {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  color: #5b6860;
+  border-radius: 6px;
+}
+
+.find-suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 1;
+  background: #fff;
+  color: #202923;
+  border: 1px solid #d8e1db;
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.find-suggestions-list {
+  max-height: min(25rem, 50dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.find-suggestions-heading {
+  padding: 10px 14px 4px;
+  color: #5b6860;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.find-suggestion {
+  display: flex;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 9px 14px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
+.find-suggestion:hover,
+.find-suggestion[aria-selected="true"] {
+  background: #e8f4ed;
+  color: var(--ggc-green-dark);
+}
+
+.find-suggestion > i { color: var(--ggc-green-primary); }
+.find-suggestion-label { display: block; font-weight: 600; }
+.find-suggestion small { display: block; color: #5b6860; font-size: 0.75rem; }
+.find-suggestions-empty { padding: 14px; font-size: 0.85rem; }
+
 .header-search .d-flex {
   flex-wrap: wrap;
   width: 100%;
@@ -2927,4 +3007,72 @@ svg .label,
 .copyright {
     display: block; /* Ensures copyright is on a new line */
     margin-top: 0.25rem;
+}
+
+/* Room sharing stays outside the zoomable map so the link remains easy to use. */
+.room-share-popup {
+  position: fixed;
+  top: 6rem;
+  right: 1rem;
+  z-index: 2400;
+  width: min(24rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 8rem);
+  overflow: auto;
+  padding: 1rem;
+  border: 1px solid #c9ded5;
+  border-radius: 1rem;
+  background: #fff;
+  color: #193b2d;
+  box-shadow: 0 8px 32px #003d2926;
+}
+
+.room-share-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.room-share-heading h2 { margin: 0; font-size: 1.2rem; }
+.room-share-popup p { margin: 0.5rem 0 1rem; overflow-wrap: anywhere; }
+.room-share-popup label { display: block; margin-bottom: 0.35rem; font-weight: 600; }
+.room-share-popup input {
+  width: 100%;
+  padding: 0.65rem;
+  border: 1px solid #a9c3b7;
+  border-radius: 0.5rem;
+  background: #f5faf7;
+  color: #193b2d;
+  font-size: 1rem;
+}
+.room-share-close {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: #edf5f0;
+  color: var(--ggc-green-primary);
+  font-size: 1.6rem;
+  cursor: pointer;
+}
+.room-share-copy {
+  --bs-btn-bg: var(--ggc-green-primary);
+  --bs-btn-border-color: var(--ggc-green-primary);
+  --bs-btn-hover-bg: var(--ggc-green-dark);
+  --bs-btn-hover-border-color: var(--ggc-green-dark);
+  --bs-btn-active-bg: var(--ggc-green-dark);
+  --bs-btn-active-border-color: var(--ggc-green-dark);
+  width: 100%;
+  min-height: 44px;
+  margin-top: 0.75rem;
+}
+.room-share-popup .room-share-status { margin: 0.75rem 0 0; font-size: 0.875rem; }
+.room-share-popup :focus-visible { outline: 3px solid var(--ggc-green-primary); outline-offset: 3px; }
+
+@media (max-width: 600px) {
+  .room-share-popup {
+    top: auto;
+    bottom: max(6rem, env(safe-area-inset-bottom));
+  }
 }
