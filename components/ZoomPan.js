@@ -38,6 +38,11 @@ const ZoomPan = forwardRef(function ZoomPan({
   // Clamp value between min and max
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
+  const getCenteredPos = (rect, bounds, nextScale) => ({
+    x: rect.width / (2 * nextScale) - (bounds.x + bounds.width / 2),
+    y: rect.height / (2 * nextScale) - (bounds.y + bounds.height / 2)
+  });
+
   const getAnchorBounds = useCallback(() => {
     const vp = viewportRef.current;
     if (!vp) return null;
@@ -93,9 +98,7 @@ const ZoomPan = forwardRef(function ZoomPan({
 
       const bounds = getAnchorBounds();
       if (bounds && isAutoFit && !userHasDragged.current) {
-        const desiredX = rect.width / 2 - next * (bounds.x + bounds.width / 2);
-        const desiredY = rect.height / 2 - next * (bounds.y + bounds.height / 2);
-        setPos({ x: desiredX, y: desiredY });
+        setPos(getCenteredPos(rect, bounds, next));
         setScale(next);
         return;
       }
@@ -165,13 +168,7 @@ const ZoomPan = forwardRef(function ZoomPan({
 
       const scaled = proposedScale * fitScaleMultiplier;
       const nextScale = clamp(scaled, minScale, maxScale);
-      const centerX = bounds.x + bounds.width / 2;
-      const centerY = bounds.y + bounds.height / 2;
-
-      const nextPos = {
-        x: rect.width / 2 - nextScale * centerX,
-        y: rect.height / 2 - nextScale * centerY
-      };
+      const nextPos = getCenteredPos(rect, bounds, nextScale);
 
       setScale(nextScale);
       setPos(nextPos);
@@ -203,10 +200,7 @@ const ZoomPan = forwardRef(function ZoomPan({
       const rect = vp.getBoundingClientRect();
       const bounds = getAnchorBounds();
       if (bounds) {
-        nextPos = {
-          x: rect.width / 2 - nextScale * (bounds.x + bounds.width / 2),
-          y: rect.height / 2 - nextScale * (bounds.y + bounds.height / 2)
-        };
+        nextPos = getCenteredPos(rect, bounds, nextScale);
       }
     }
 
@@ -224,7 +218,9 @@ const ZoomPan = forwardRef(function ZoomPan({
     });
   }, [resetView]);
 
-  // ----- Pointer drag pan -----
+  // ----- Pointer drag pan and two-finger pinch -----
+  const pointers = useRef(new Map());
+  const pinch = useRef(null);
   const drag = useRef({
     active: false,
     id: null,
@@ -237,8 +233,32 @@ const ZoomPan = forwardRef(function ZoomPan({
   });
   const TAP_SLOP = 4; // px before we consider it a drag
 
+  const startPinch = () => {
+    const [a, b] = Array.from(pointers.current.values());
+    const rect = viewportRef.current.getBoundingClientRect();
+    pinch.current = {
+      distance: Math.hypot(b.x - a.x, b.y - a.y),
+      scale,
+      contentX: ((a.x + b.x) / 2 - rect.left) / scale - pos.x,
+      contentY: ((a.y + b.y) / 2 - rect.top) / scale - pos.y
+    };
+    drag.current.active = false;
+    drag.current.dragged = true;
+    drag.current._suppressClickOnce = true;
+    userHasDragged.current = true;
+  };
+
   // Handle pointer down event
   const onPointerDown = (e) => {
+    if (e.target.closest('button') || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.current.size >= 2) {
+      startPinch();
+      for (const id of pointers.current.keys()) {
+        e.currentTarget.setPointerCapture(id);
+      }
+      return;
+    }
     drag.current = {
       active: true,
       id: e.pointerId,
@@ -253,6 +273,25 @@ const ZoomPan = forwardRef(function ZoomPan({
 
   // Handle pointer move event
   const onPointerMove = (e) => {
+    if (!pointers.current.has(e.pointerId)) return;
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch.current) {
+      const [a, b] = Array.from(pointers.current.values());
+      const distance = Math.hypot(b.x - a.x, b.y - a.y);
+      // Coincident fingers have no usable starting distance yet.
+      if (!pinch.current.distance) {
+        startPinch();
+        return;
+      }
+      const nextScale = clamp(pinch.current.scale * distance / pinch.current.distance, minScale, maxScale);
+      const rect = e.currentTarget.getBoundingClientRect();
+      setScale(nextScale);
+      setPos({
+        x: ((a.x + b.x) / 2 - rect.left) / nextScale - pinch.current.contentX,
+        y: ((a.y + b.y) / 2 - rect.top) / nextScale - pinch.current.contentY
+      });
+      return;
+    }
     if (!drag.current.active || drag.current.id !== e.pointerId) return;
     const dx = e.clientX - drag.current.startX;
     const dy = e.clientY - drag.current.startY;
@@ -276,6 +315,29 @@ const ZoomPan = forwardRef(function ZoomPan({
 
   // Handle pointer up event
   const onPointerUp = (e) => {
+    // Ignore capture transferred from an SVG child to this viewport.
+    if (e.type === 'lostpointercapture' && e.target !== e.currentTarget) return;
+    if (!pointers.current.delete(e.pointerId)) return;
+    if (pinch.current) {
+      pinch.current = null;
+      drag.current._suppressClickOnce = true;
+      if (pointers.current.size >= 2) {
+        startPinch();
+      } else if (pointers.current.size === 1) {
+        const [id, point] = pointers.current.entries().next().value;
+        // Continue panning from the current view without jumping after a pinch.
+        drag.current = {
+          active: true, id, startX: point.x, startY: point.y,
+          origX: pos.x, origY: pos.y, captured: true, dragged: true,
+          _suppressClickOnce: true
+        };
+      } else {
+        drag.current.active = false;
+        drag.current.captured = false;
+      }
+      try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
+      return;
+    }
     if (drag.current.id === e.pointerId) {
       if (drag.current.captured) {
         try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
@@ -291,6 +353,7 @@ const ZoomPan = forwardRef(function ZoomPan({
 
   // Suppress container-level click after a drag so it doesn't interfere
   const onClickCapture = (e) => {
+    if (e.target.closest('button')) return;
     if (drag.current._suppressClickOnce) {
       drag.current._suppressClickOnce = false;
       e.stopPropagation();
@@ -447,6 +510,7 @@ const ZoomPan = forwardRef(function ZoomPan({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
+      onLostPointerCapture={onPointerUp}
       onClickCapture={onClickCapture}
         style={{
           position: 'relative',
@@ -462,17 +526,15 @@ const ZoomPan = forwardRef(function ZoomPan({
         style={{
           width: '100%',
           height: '100%',
-          transform: `translate(${pos.x}px, ${pos.y}px) scale(${scale})`,
-          transformOrigin: '0 0',
-          willChange: 'transform'
+          transform: `scale(${scale}) translate(${pos.x}px, ${pos.y}px)`,
+          transformOrigin: '0 0'
         }}
       >
         {children}
       </div>
       {showControls && (
         <div
-          className="position-absolute top-0 p-2"
-          style={{ pointerEvents: 'none', zIndex: 5, right: '0.75rem' }}
+          className="zoompan-controls-container"
         >
           <div className="zoompan-controls" style={{ pointerEvents: 'auto' }}>
             <button
