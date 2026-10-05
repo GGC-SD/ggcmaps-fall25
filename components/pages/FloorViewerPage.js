@@ -1,10 +1,11 @@
 'use client';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useCallback } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import FloorMapView from '../FloorMapView';
+import RoomSharePopup from '../RoomSharePopup';
 import { getBuildingById } from '../../lib/campus';
 import { useLanguage } from '../LanguageContext';
-import { getUIText } from '../../lib/i18n';
+import { getUIText, translateBuildingName, translateFloorLabel } from '../../lib/i18n';
 
 // Inner component that uses useSearchParams
 function FloorViewerContent({ buildingId, floorId, locale }) {
@@ -16,111 +17,32 @@ function FloorViewerContent({ buildingId, floorId, locale }) {
   const currentFloor = floors[currentFloorIndex]; // Get current floor data
   const roomToHighlight = searchParams.get('room'); // Get room from query params
   const ui = getUIText(locale);
+  const [sharedRoom, setSharedRoom] = useState(null);
+  const closeShare = useCallback(() => setSharedRoom(null), []);
 
-  // Navigate to the upper floor
-  const goToUpperFloor = () => {
-    if (currentFloorIndex < floors.length - 1) {
-      router.push(`/building/${buildingId}/${floors[currentFloorIndex + 1].id}`); // Navigate to upper floor
-    }
-  };
-
-  // Navigate to the lower floor
-  const goToLowerFloor = () => {
-    if (currentFloorIndex > 0) {
-      router.push(`/building/${buildingId}/${floors[currentFloorIndex - 1].id}`); // Navigate to lower floor
-    }
-  };
-
-  // Highlight room when component mounts or room param changes
   useEffect(() => {
-    if (!roomToHighlight) return;
+    setSharedRoom(null);
+  }, [buildingId, floorId]);
 
-    const highlightInPage = (roomId) => {
-      // Look for SVG in the floor viewer main element
-      const floorViewer = document.querySelector('.floor-viewer');
-      if (!floorViewer) {
-        return false;
-      }
-      
-      const svg = floorViewer.querySelector('svg');
-      if (!svg) return false;
-
-      // Clear previous highlights
-      svg.querySelectorAll(".active-room").forEach(el =>
-        el.classList.remove("active-room")
-      );
-
-      // Find the room group or element
-      const group =
-        svg.querySelector(`g.room-group[id="${roomId}"]`) ||
-        svg.querySelector(`g[id="${roomId}"]`);
-      if (!group) return false;
-
-      const shape = group.querySelector(".room") || group.querySelector("rect, polygon, path");
-      const label = group.querySelector(".label") || group.querySelector("text");
-
-      if (shape) shape.classList.add("active-room");
-      if (label) label.classList.add("label--active");
-
-      // Ensure elements are rendered on top
-      if (shape?.parentElement) shape.parentElement.appendChild(shape);
-      if (label?.parentElement) label.parentElement.appendChild(label);
-
-      return true;
-    };
-
-    const highlightWithRetry = (roomId, attempts = 10, delay = 100) => {
-      const ok = highlightInPage(roomId);
-      if (ok) {
-        return;
-      }
-
-      if (attempts <= 0) {
-        return;
-      }
-      setTimeout(() => highlightWithRetry(roomId, attempts - 1, delay), delay);
-    };
-
-    highlightWithRetry(roomToHighlight);
+  useEffect(() => {
+    setSharedRoom(current => current?.roomId === roomToHighlight ? current : null);
   }, [roomToHighlight]);
 
-  // Handle room selection from map clicks
+  useEffect(() => {
+    window.addEventListener('popstate', closeShare);
+    return () => window.removeEventListener('popstate', closeShare);
+  }, [closeShare]);
+
+  // Preserve the current path (including the deployment base path) and other parameters.
   const handleRoomSelect = useCallback((roomId) => {
-    // Create a highlight effect immediately for visual feedback
-    const highlightInPage = (roomId) => {
-      const floorViewer = document.querySelector('.floor-viewer');
-      if (!floorViewer) return false;
-      
-      const svg = floorViewer.querySelector('svg');
-      if (!svg) return false;
-
-      // Clear previous highlights
-      svg.querySelectorAll(".active-room").forEach(el =>
-        el.classList.remove("active-room")
-      );
-
-      // Find the room group or element
-      const group =
-        svg.querySelector(`g.room-group[id="${roomId}"]`) ||
-        svg.querySelector(`g[id="${roomId}"]`);
-      if (!group) return false;
-
-      const shape = group.querySelector(".room") || group.querySelector("rect, polygon, path");
-      const label = group.querySelector(".label") || group.querySelector("text");
-
-      if (shape) shape.classList.add("active-room");
-      if (label) label.classList.add("label--active");
-
-      // Ensure elements are rendered on top
-      if (shape?.parentElement) shape.parentElement.appendChild(shape);
-      if (label?.parentElement) label.parentElement.appendChild(label);
-
-      return true;
-    };
-
-    highlightInPage(roomId);
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('room') !== roomId) {
+      url.searchParams.set('room', roomId);
+      // Next.js syncs native history updates with useSearchParams without reloading the map.
+      window.history.pushState(null, '', url);
+    }
+    setSharedRoom({ roomId, url: url.href });
   }, []);
-
   if (!buildingData || !currentFloor) {
     return <div>{ui.general.notFound}</div>; // Display message if floor not found
   }
@@ -135,7 +57,17 @@ function FloorViewerContent({ buildingId, floorId, locale }) {
           router.push(`/building/${buildingId}/${newFloorId}`);
         }}
         onRoomSelect={handleRoomSelect}
+        roomToHighlight={roomToHighlight}
       />
+      {sharedRoom && (
+        <RoomSharePopup
+          key={sharedRoom.url}
+          url={sharedRoom.url}
+          roomLabel={`${translateBuildingName(buildingData.name, locale)} · ${translateFloorLabel(currentFloor.label, locale)} · ${sharedRoom.roomId.replaceAll('_', ' ')}`}
+          copy={ui.roomShare}
+          onClose={closeShare}
+        />
+      )}
     </main>
   );
 }
