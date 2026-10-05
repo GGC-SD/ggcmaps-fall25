@@ -15,7 +15,7 @@ import {
 import { useLanguage } from "./LanguageContext";
 import { getUIText, translateBuildingName, translateFloorLabel } from "../lib/i18n";
 
-const maxCharsAllowed = 30;
+const maxCharsAllowed = 100;
 
 // Dynamically generate valid buildings and floors from buildings.json
 const validBuildings = buildings.map(b => b.id.toLowerCase());
@@ -28,6 +28,9 @@ const validBuildingFloors = buildings.flatMap(b =>
 
 // Room aliases for quick navigation to common locations
 const ALIASES = {
+  "belonging center": { building: "B", level: "L1", room: "1000" },
+  lvis: { building: "E", level: "L2", room: "lvis" },
+  "stephens family executive forum": { building: "W", level: "GL", room: "1210" },
   aec: { building: "W", level: "GL", room: "1160" },
   cisco: { building: "C", level: "L1", room: "1260" },
   park: { building: "D", level: "L1", room: "1125" },
@@ -95,6 +98,8 @@ const ALIASES_ES = {
 
 const normalizeSuggestion = value => value.toLowerCase().replace(/[\s_-]/g, "");
 const PLACE_LABELS = {
+  "belonging center": "Belonging Center", lvis: "LVIS",
+  "stephens family executive forum": "Stephens Family Executive Forum",
   "cc basketball": "CC Basketball", "cc event space": "CC Event Space",
   aec: "AEC", cisco: "Cisco", gameroom: "Game room", cfa: "Chick-fil-A",
   moes: "Moe's", panda: "Panda Express", bagel: "Einstein Bros. Bagels",

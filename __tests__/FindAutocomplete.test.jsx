@@ -41,6 +41,26 @@ test('partial names submit the best match and duplicate place aliases collapse',
 });
 
 test.each([
+  ['belong', 'Belonging Center', '/building/B/L1?room=1000'],
+  ['lv', 'LVIS', '/building/E/L2?room=lvis'],
+  ['stephens', 'Stephens Family Executive Forum', '/building/W/GL?room=1210'],
+])('%s offers the named place and accepts its full name', async (query, label, route) => {
+  render(<Find />);
+  const input = screen.getByRole('combobox');
+  await userEvent.type(input, query);
+  const places = screen.getByRole('group', { name: 'Places' });
+  await userEvent.click(within(places).getByRole('option', { name: new RegExp(`^${label} `) }));
+  expect(useRouter().push).toHaveBeenLastCalledWith(route);
+
+  useRouter().push.mockClear();
+  await userEvent.clear(input);
+  await userEvent.type(input, label);
+  expect(input).toHaveValue(label);
+  await userEvent.keyboard('{Enter}');
+  expect(useRouter().push).toHaveBeenCalledWith(route);
+});
+
+test.each([
   ['w116', '/building/W/GL?room=1160', /Ground Level/],
   ['cc1301a', '/building/CC/L3?room=1301A', /Level 3/],
   [' B 2200 ', '/building/B/L2?room=2200', /Level 2/],
