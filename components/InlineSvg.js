@@ -1,4 +1,5 @@
 'use client';
+import { getAssetPath } from '../lib/assetUtils';
 import { useEffect, useRef, useState } from 'react';
 import { sanitizeSvgMarkup, escapeSelectorId, inferElementKind } from '../lib/svgUtils';
 import { useElementSelection } from '../hooks/useElementSelection';
@@ -31,7 +32,7 @@ export default function InlineSvg({
     let alive = true; // Flag to track component lifecycle
       setMarkup(null); // Reset markup state
       setError(null); // Reset error state
-      fetch(src, { cache: 'no-store' }) // Fetch the SVG file
+      fetch(getAssetPath(src), { cache: 'no-store' }) // Fetch the SVG file
         .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }) // Check response status
         .then(t => { if (alive) setMarkup(sanitizeSvgMarkup(t)); }) // Set sanitized markup
         .catch(err => { if (alive) setError(err.message); }); // Handle errors

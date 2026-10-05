@@ -1,1 +1,0 @@
-self.__SSG_MANIFEST=new Set(["\u002Fbuilding\u002F[buildingId]","\u002Fbuilding\u002F[buildingId]\u002F[floorId]"]);self.__SSG_MANIFEST_CB&&self.__SSG_MANIFEST_CB()
