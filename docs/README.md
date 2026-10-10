@@ -10,6 +10,8 @@
 - [User Tutorial](./UserTutorial.md)
 - [User Testing](./UserTesting.md)
 - [Licensing](./License.md)
+- [GGC MAPPING DEMO](https://www.youtube.com/watch?v=-EgCMopSJRc)
+- [SVG Mapping Guide](./mapping.md)
 
 ### Links
  - The [legacy GGC Maps project](http://ggcmaps.com/#Campus) is available for reference, but this repository focuses on rebuilding it with modern frameworks and a modular design.
